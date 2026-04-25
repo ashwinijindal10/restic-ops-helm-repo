@@ -1,0 +1,28 @@
+{{- if and .Values.enableBackrestUI .Values.ui.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backrest
+  namespace: {{ .Values.namespace }}
+  {{- with .Values.ui.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ui.ingress.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ui.ingress.host }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ui.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backrest
+                port:
+                  number: 80
+{{- end }}

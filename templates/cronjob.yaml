@@ -1,0 +1,101 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nfs-backup-all
+  namespace: {{ .Values.namespace }}
+spec:
+  schedule: {{ .Values.backup.schedule | quote }}
+  concurrencyPolicy: {{ .Values.backup.concurrencyPolicy }}
+  successfulJobsHistoryLimit: {{ .Values.backup.successHistory }}
+  failedJobsHistoryLimit: {{ .Values.backup.failHistory }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ .Values.backup.ttlSecondsAfterFinished }}
+      backoffLimit: {{ .Values.backup.backoffLimit }}
+      template:
+        spec:
+          restartPolicy: OnFailure
+          nodeSelector:
+{{ toYaml .Values.backup.nodeSelector | indent 12 }}
+          containers:
+            - name: restic
+              image: {{ .Values.backup.image }}
+              imagePullPolicy: IfNotPresent
+
+              env:
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secretName }}
+                      key: AWS_ACCESS_KEY_ID
+
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secretName }}
+                      key: AWS_SECRET_ACCESS_KEY
+
+                - name: AWS_DEFAULT_REGION
+                  value: {{ .Values.backup.region | quote }}
+
+                - name: OCI_ENDPOINT
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secretName }}
+                      key: OCI_ENDPOINT
+
+                - name: RESTIC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secretName }}
+                      key: RESTIC_PASSWORD
+
+              resources:
+{{ toYaml .Values.backup.resources | indent 16 }}
+
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  backup_volume() {
+                    NAME=$1
+                    MOUNT_PATH=$2
+                    REPO="{{ .Values.backup.repoBase }}/${NAME}"
+
+                    echo "=============================="
+                    echo "Starting backup: ${NAME}"
+                    echo "=============================="
+
+                    RESTIC_REPOSITORY=$REPO restic snapshots || RESTIC_REPOSITORY=$REPO restic init
+                    RESTIC_REPOSITORY=$REPO restic backup $MOUNT_PATH
+                    RESTIC_REPOSITORY=$REPO restic forget \
+                      --keep-daily {{ .Values.backup.retention.daily }} \
+                      --keep-weekly {{ .Values.backup.retention.weekly }} \
+                      --keep-monthly {{ .Values.backup.retention.monthly }} \
+                      --prune
+
+                    echo "✅ ${NAME} done: $(date)"
+                  }
+
+                  {{- range .Values.backup.targets }}
+                  backup_volume "{{ .name }}" "{{ .mountPath }}"
+                  {{- end }}
+
+                  echo "✅✅ All backups complete: $(date)"
+
+              volumeMounts:
+                {{- range .Values.backup.targets }}
+                - name: {{ .name }}
+                  mountPath: {{ .mountPath }}
+                  readOnly: true
+                {{- end }}
+
+          volumes:
+            {{- range .Values.backup.targets }}
+            - name: {{ .name }}
+              persistentVolumeClaim:
+                claimName: {{ .pvc }}
+            {{- end }}
+                

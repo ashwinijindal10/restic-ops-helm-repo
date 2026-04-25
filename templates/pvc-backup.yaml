@@ -1,0 +1,17 @@
+{{- if .Values.createBackupTargetPVCs }}
+{{- range .Values.backup.targets }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .pvc }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ .storageClass }}
+  resources:
+    requests:
+      storage: {{ .size }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,14 @@
+{{- if .Values.enableBackrestUI }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: backrest
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: backrest
+  ports:
+    - port: 80
+      targetPort: 9898
+  type: {{ .Values.ui.service.type | default "ClusterIP" }}
+{{- end }}

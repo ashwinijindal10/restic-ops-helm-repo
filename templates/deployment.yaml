@@ -1,0 +1,74 @@
+{{- if .Values.enableBackrestUI }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backrest
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.ui.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: backrest
+  template:
+    metadata:
+      labels:
+        app: backrest
+    spec:
+      nodeSelector:
+{{ toYaml .Values.ui.nodeSelector | indent 8 }}
+
+      enableServiceLinks: false
+
+      containers:
+        - name: backrest
+          image: {{ .Values.ui.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9898
+
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: AWS_ACCESS_KEY_ID
+
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: AWS_SECRET_ACCESS_KEY
+
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: RESTIC_PASSWORD
+
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Values.backup.region | quote }}
+
+            - name: RESTIC_REPOSITORY
+              value: "dummy"
+
+            - name: BACKREST_LISTEN
+              value: "0.0.0.0:9898"
+
+          volumeMounts:
+            - name: cache
+              mountPath: /root/.cache/restic
+
+            - name: data
+              mountPath: /data
+
+          resources:
+{{ toYaml .Values.ui.resources | indent 12 }}
+
+      volumes:
+        - name: cache
+          emptyDir: {}
+
+        - name: data
+          persistentVolumeClaim:
+            claimName: backrest-data
+{{- end }}

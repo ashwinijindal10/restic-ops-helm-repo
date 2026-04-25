@@ -1,0 +1,14 @@
+{{- if .Values.enableBackrestUI }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backrest-data
+  namespace: {{ .Values.namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.storageSize }}
+{{- end }}

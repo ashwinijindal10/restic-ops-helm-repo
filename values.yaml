@@ -1,0 +1,124 @@
+# Default values for restic-ops Helm chart
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Kubernetes namespace where all resources will be deployed
+namespace: default
+
+# Storage configuration for Backrest UI data PVC
+storageClass: standard
+storageSize: 1Gi
+
+# Backrest UI Service and Ingress configuration
+enableBackrestUI: true
+
+# Create PVCs for backup targets (set to false if you manage PVCs separately)
+createBackupTargetPVCs: false
+
+ui:
+  replicas: 1
+  image: ghcr.io/garethgeorge/backrest:latest
+  nodeSelector: {}
+    # Example:
+    # capability/ui: "true"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  service:
+    type: ClusterIP
+    # type: LoadBalancer  # Use for external access
+  ingress:
+    enabled: false
+    host: "backrest.example.com"
+    annotations: {}
+      # Example:
+      # cert-manager.io/cluster-issuer: letsencrypt-prod
+      # nginx.ingress.kubernetes.io/auth-type: basic
+    tls: false
+    # tlsSecretName: backrest-tls  # Required if tls: true
+
+# Secret name containing cloud credentials
+# ⚠️ IMPORTANT: Secret must already exist with these keys:
+#   - AWS_ACCESS_KEY_ID
+#   - AWS_SECRET_ACCESS_KEY
+#   - OCI_ENDPOINT (for OCI/S3-compatible storage)
+secretName: restic-secret
+
+# Restic encryption password
+# ⚠️ IMPORTANT: Must exist in the secret with key: RESTIC_PASSWORD
+# See secrets.yaml for ExternalSecrets configuration
+resticPassword: changeme  # Reference only; actual value comes from secret
+
+# Restic CronJob configuration
+backup:
+  # Restic container image
+  image: restic/restic:latest
+
+  # Cron schedule for backups (runs daily at 2 AM UTC)
+  schedule: "0 2 * * *"
+  # Common cron patterns:
+  # "0 2 * * *"        - Daily at 2 AM UTC
+  # "0 2,14 * * *"     - Twice daily (2 AM and 2 PM UTC)
+  # "0 3 * * 0"        - Weekly on Sunday at 3 AM UTC
+  # "0 4 1 * *"        - Monthly on 1st at 4 AM UTC
+
+  # Concurrency policy: Allow, Forbid, Replace
+  concurrencyPolicy: Forbid
+
+  # Number of successful jobs to keep in history
+  successHistory: 2
+
+  # Number of failed jobs to keep in history
+  failHistory: 2
+
+  # Maximum number of retries per backup job
+  backoffLimit: 2
+
+  # TTL (in seconds) before finished jobs are auto-deleted
+  ttlSecondsAfterFinished: 36000  # 10 hours
+
+  # Node selector for CronJob pods
+  nodeSelector: {}
+    # Example:
+    # capability/apps: "true"
+
+  # Base repository path for restic backups
+  # Supports: s3, s3-legacy, rest, azure, b2, gs, swift, rclone
+  repoBase: "s3:https://s3.example.com/restic-backups"
+
+  # Cloud region for backup storage (AWS, OCI, etc.)
+  region: us-east-1
+
+  # Backup retention policy
+  retention:
+    daily: 7      # Keep daily snapshots for 7 days
+    weekly: 4     # Keep one snapshot per week for 4 weeks
+    monthly: 3    # Keep one snapshot per month for 3 months
+
+  # Resource requests and limits for backup container
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  # List of PVCs (Persistent Volume Claims) to backup
+  # Add as many targets as needed
+  targets:
+    - name: data
+      mountPath: /data
+      pvc: pvc-data
+      storageClass: standard
+      size: 1Gi
+    # Example: Add more targets
+    # - name: database
+    #   mountPath: /database
+    #   pvc: pvc-database
+    #   storageClass: nfs-storage
+    #   size: 50Gi

@@ -1,0 +1,14 @@
+apiVersion: v2
+name: restic-ops
+version: 0.1.0
+description: Production-ready Helm chart for restic-based Kubernetes backups with Backrest UI
+appVersion: "1.0.0"
+keywords:
+  - backup
+  - restic
+  - kubernetes
+  - cronjob
+  - backrest
+maintainers:
+  - name: Ashwini Jindal
+    email: ashwinijindal10@gmail.com
