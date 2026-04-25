@@ -13,6 +13,23 @@ ui:
   image: ghcr.io/garethgeorge/backrest:latest
   storageClass: standard
   storageSize: 1Gi
+  sourcePvcMounts: []
+    # Example:
+    # - name: nfs-oci1
+    #   create: true
+    #   pvc: pvc-nfs-oci1-backup
+    #   mountPath: /userdata/nfs-oci1
+    #   accessModes:
+    #     - ReadWriteMany
+    #   storageClass: nfs-oci1-in-storage
+    #   size: 1Mi
+    #   readOnly: true
+  backrestConfig:
+    enabled: false
+    existingConfigMap: ""
+    # Optional inline template content. Supports ${VAR} and $(VAR) placeholders.
+    content: ""
+    rendererImage: python:3.12-alpine
   nodeSelector: {}
     # Example:
     # capability/ui: "true"

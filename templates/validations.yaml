@@ -1,3 +1,6 @@
 {{- if and .Values.ui.ingress.enabled .Values.ui.traefik.ingressRoute.enabled }}
 {{- fail "Only one of ui.ingress.enabled or ui.traefik.ingressRoute.enabled can be true" }}
 {{- end }}
+{{- if and .Values.ui.backrestConfig.enabled .Values.ui.backrestConfig.existingConfigMap .Values.ui.backrestConfig.content }}
+{{- fail "Only one of ui.backrestConfig.existingConfigMap or ui.backrestConfig.content can be set when ui.backrestConfig.enabled is true" }}
+{{- end }}

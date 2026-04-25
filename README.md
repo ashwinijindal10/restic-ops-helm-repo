@@ -149,6 +149,9 @@ backup:
 | `image` | string | `ghcr.io/garethgeorge/backrest:latest` | UI container image |
 | `ui.storageClass` | string | `standard` | Storage class for Backrest UI data PVC |
 | `ui.storageSize` | string | `1Gi` | Storage size for Backrest UI data PVC |
+| `ui.sourcePvcMounts` | list | `[]` | Extra source PVCs mounted into Backrest for plan paths; can also create PVCs when `create: true` |
+| `ui.backrestConfig.enabled` | bool | `false` | Render and mount `/config/config.json` for Backrest |
+| `ui.backrestConfig.existingConfigMap` | string | `""` | Existing ConfigMap containing `config.json.tpl` |
 | `ui.nodeSelector` | map | `{}` | Node labels for UI pods |
 | `ui.service.type` | string | `ClusterIP` | Service type (ClusterIP/LoadBalancer) |
 | `ui.ingress.enabled` | bool | `false` | Enable Ingress |
@@ -160,6 +163,82 @@ backup:
 | `ui.traefik.ingressRoute.auth.enabled` | bool | `false` | Create and attach a Traefik basicAuth middleware |
 | `ui.traefik.ingressRoute.auth.secretName` | string | `ext-secrets` | Secret used by Traefik basicAuth middleware |
 | `ui.traefik.ingressRoute.headers.enabled` | bool | `true` | Create and attach a Traefik headers middleware |
+
+### Preseeded Backrest Config
+
+To let Backrest manage schedules and retention directly, keep the CronJob disabled and provide a Backrest config template. The chart mounts your source PVCs into the Backrest pod and renders `/config/config.json` before Backrest starts.
+
+Use JSON string placeholders inside quotes. The chart replaces both `${VAR}` and `$(VAR)` from the pod environment before Backrest starts.
+
+```yaml
+backup:
+  cronJob:
+    enabled: false
+  region: ap-mumbai-1
+
+ui:
+  backrestConfig:
+    enabled: true
+    content: |
+      {
+        "modno": 1,
+        "repos": [
+          {
+            "id": "oci1-india",
+            "uri": "$(BUCKET_ENDPOINT)/oci1-india",
+            "password": "$(RESTIC_PASSWORD)",
+            "env": [
+              "AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)",
+              "AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)",
+              "AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION)"
+            ]
+          },
+          {
+            "id": "gcp1-us",
+            "uri": "$(BUCKET_ENDPOINT)/gcp1-us",
+            "password": "$(RESTIC_PASSWORD)",
+            "env": [
+              "AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)",
+              "AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)",
+              "AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION)"
+            ]
+          }
+        ],
+        "plans": [
+          {
+            "id": "plan-oci1-india",
+            "repo": "oci1-india",
+            "paths": ["/userdata/nfs-oci1"],
+            "schedule": { "cron": "0 */2 * * *" }
+          },
+          {
+            "id": "plan-gcp1-us",
+            "repo": "gcp1-us",
+            "paths": ["/userdata/nfs-gcp1"],
+            "schedule": { "cron": "0 */2 * * *" }
+          }
+        ]
+      }
+  sourcePvcMounts:
+    - name: nfs-oci1
+      create: true
+      pvc: pvc-nfs-oci1-backup
+      mountPath: /userdata/nfs-oci1
+      accessModes:
+        - ReadWriteMany
+      storageClass: nfs-oci1-in-storage
+      size: 1Mi
+      readOnly: true
+    - name: nfs-gcp1
+      create: true
+      pvc: pvc-nfs-gcp1-backup
+      mountPath: /userdata/nfs-gcp1
+      accessModes:
+        - ReadWriteMany
+      storageClass: nfs-gcp1-us-storage
+      size: 1Mi
+      readOnly: true
+```
 
 ## Secrets Setup
 

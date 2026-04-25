@@ -1,0 +1,10 @@
+{{- if and .Values.enableBackrestUI .Values.ui.backrestConfig.enabled (not .Values.ui.backrestConfig.existingConfigMap) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backrest-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.json.tpl: |
+{{- required "ui.backrestConfig.content is required when ui.backrestConfig.enabled is true and ui.backrestConfig.existingConfigMap is empty" .Values.ui.backrestConfig.content | nindent 4 }}
+{{- end }}

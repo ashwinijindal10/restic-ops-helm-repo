@@ -19,6 +19,55 @@ spec:
 
       enableServiceLinks: false
 
+      {{- if .Values.ui.backrestConfig.enabled }}
+      initContainers:
+        - name: render-backrest-config
+          image: {{ .Values.ui.backrestConfig.rendererImage }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: RESTIC_PASSWORD
+            - name: BUCKET_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: BUCKET_ENDPOINT
+            {{- if .Values.backup.region }}
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Values.backup.region | quote }}
+            {{- end }}
+          command:
+            - python
+            - -c
+            - |
+              import os
+              from pathlib import Path
+
+              content = Path("/config-src/config.json.tpl").read_text()
+              for key, value in os.environ.items():
+                  content = content.replace("${" + key + "}", value)
+                  content = content.replace("$(" + key + ")", value)
+              Path("/config/config.json").write_text(content)
+          volumeMounts:
+            - name: rendered-config
+              mountPath: /config
+            - name: backrest-config-template
+              mountPath: /config-src
+      {{- end }}
+
       containers:
         - name: backrest
           image: {{ .Values.ui.image }}
@@ -45,23 +94,43 @@ spec:
                   name: {{ .Values.secretName }}
                   key: RESTIC_PASSWORD
 
+            - name: BUCKET_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: BUCKET_ENDPOINT
+
             {{- if .Values.backup.region }}
             - name: AWS_DEFAULT_REGION
               value: {{ .Values.backup.region | quote }}
             {{- end }}
 
-            - name: RESTIC_REPOSITORY
-              value: "dummy"
-
             - name: BACKREST_LISTEN
               value: "0.0.0.0:9898"
+            - name: BACKREST_DATA
+              value: "/data"
+            {{- if .Values.ui.backrestConfig.enabled }}
+            - name: BACKREST_CONFIG
+              value: "/config/config.json"
+            {{- end }}
+            - name: XDG_CACHE_HOME
+              value: "/cache"
 
           volumeMounts:
             - name: cache
-              mountPath: /root/.cache/restic
+              mountPath: /cache
 
             - name: data
               mountPath: /data
+            {{- if .Values.ui.backrestConfig.enabled }}
+            - name: rendered-config
+              mountPath: /config
+            {{- end }}
+            {{- range .Values.ui.sourcePvcMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              readOnly: {{ default true .readOnly }}
+            {{- end }}
 
           resources:
 {{ toYaml .Values.ui.resources | indent 12 }}
@@ -73,4 +142,16 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: backrest-data
+        {{- if .Values.ui.backrestConfig.enabled }}
+        - name: rendered-config
+          emptyDir: {}
+        - name: backrest-config-template
+          configMap:
+            name: {{ default "backrest-config" .Values.ui.backrestConfig.existingConfigMap }}
+        {{- end }}
+        {{- range .Values.ui.sourcePvcMounts }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ .pvc }}
+        {{- end }}
 {{- end }}

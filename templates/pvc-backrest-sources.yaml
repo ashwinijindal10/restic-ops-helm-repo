@@ -1,0 +1,21 @@
+{{- range .Values.ui.sourcePvcMounts }}
+{{- if .create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .pvc }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  accessModes:
+{{- if .accessModes }}
+{{ toYaml .accessModes | indent 4 }}
+{{- else }}
+    - ReadWriteMany
+{{- end }}
+  storageClassName: {{ .storageClass }}
+  resources:
+    requests:
+      storage: {{ .size }}
+{{- end }}
+{{- end }}
