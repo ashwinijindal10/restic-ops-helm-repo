@@ -6,7 +6,7 @@
 2. **Prepare your custom values file** (see example in "Quick Start").
 3. **Add the Helm repo and install the chart:**
   ```bash
-  helm repo add restic-ops https://ashwinijindal10.github.io/restic-ops-help-repo/charts
+  helm repo add restic-ops https://ashwinijindal10.github.io/restic-ops-helm-repo/charts
   helm repo update
   helm upgrade --install restic-ops restic-ops/restic-ops \
     -f my-values.yaml \
@@ -315,7 +315,7 @@ Commit and push.
 helm lint .
 helm package . --destination docs/charts
 helm repo index docs/charts \
-  --url https://ashwinijindal10.github.io/restic-ops-help-repo/charts
+  --url https://ashwinijindal10.github.io/restic-ops-helm-repo/charts
 
 git add .
 git commit -m "chore(release): package chart and update index"
