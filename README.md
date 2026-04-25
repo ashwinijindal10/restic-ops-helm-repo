@@ -1,5 +1,18 @@
 # restic-ops Helm Chart
 
+## Usage
+
+1. **Create a Kubernetes secret** with your cloud credentials and restic password (see "Secrets Setup" below).
+2. **Prepare your custom values file** (see example in "Quick Start").
+3. **Add the Helm repo and install the chart:**
+  ```bash
+  helm repo add restic-ops https://ashwinijindal10.github.io/restic-ops-help-repo/charts
+  helm repo update
+  helm install restic-ops restic-ops/restic-ops -f my-values.yaml
+  ```
+
+For detailed configuration and troubleshooting, see the sections below in the README.
+
 A production-ready Helm chart for scheduled Kubernetes volume backups using restic, with an optional Backrest UI for management and monitoring.
 
 ## Features
