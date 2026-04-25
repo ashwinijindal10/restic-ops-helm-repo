@@ -1,0 +1,3 @@
+{{- if and .Values.ui.ingress.enabled .Values.ui.traefik.ingressRoute.enabled }}
+{{- fail "Only one of ui.ingress.enabled or ui.traefik.ingressRoute.enabled can be true" }}
+{{- end }}

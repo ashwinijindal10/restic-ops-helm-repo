@@ -35,6 +35,21 @@ ui:
       # nginx.ingress.kubernetes.io/auth-type: basic
     tls: false
     # tlsSecretName: backrest-tls  # Required if tls: true
+  traefik:
+    ingressRoute:
+      enabled: false
+      host: "backrest.example.com"
+      entryPoints:
+        - websecure
+      auth:
+        enabled: false
+        middlewareName: backrest-auth
+        secretName: ext-secrets
+      headers:
+        enabled: true
+        middlewareName: backrest-headers
+        customRequestHeaders:
+          X-Forwarded-Proto: https
 
 # Secret name containing cloud credentials
 # ⚠️ IMPORTANT: Secret must already exist with these keys:

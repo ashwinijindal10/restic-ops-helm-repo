@@ -141,6 +141,12 @@ backup:
 | `ui.ingress.enabled` | bool | `false` | Enable Ingress |
 | `ui.ingress.host` | string | `backrest.example.com` | Ingress hostname |
 | `ui.ingress.tls` | bool | `false` | Enable TLS |
+| `ui.traefik.ingressRoute.enabled` | bool | `false` | Enable Traefik IngressRoute instead of standard Ingress |
+| `ui.traefik.ingressRoute.host` | string | `backrest.example.com` | Traefik IngressRoute hostname |
+| `ui.traefik.ingressRoute.entryPoints` | list | `[websecure]` | Traefik entry points |
+| `ui.traefik.ingressRoute.auth.enabled` | bool | `false` | Create and attach a Traefik basicAuth middleware |
+| `ui.traefik.ingressRoute.auth.secretName` | string | `ext-secrets` | Secret used by Traefik basicAuth middleware |
+| `ui.traefik.ingressRoute.headers.enabled` | bool | `true` | Create and attach a Traefik headers middleware |
 
 ## Secrets Setup
 

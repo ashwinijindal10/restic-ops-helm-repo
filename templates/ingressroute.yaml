@@ -1,0 +1,53 @@
+{{- if and .Values.enableBackrestUI .Values.ui.traefik.ingressRoute.enabled }}
+{{- $ingressRoute := .Values.ui.traefik.ingressRoute }}
+{{- $authEnabled := $ingressRoute.auth.enabled }}
+{{- $headersEnabled := $ingressRoute.headers.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: backrest
+  namespace: {{ .Release.Namespace }}
+spec:
+  entryPoints:
+{{ toYaml $ingressRoute.entryPoints | indent 4 }}
+  routes:
+    - match: "Host(`{{ $ingressRoute.host }}`)"
+      kind: Rule
+      {{- if or $authEnabled $headersEnabled }}
+      middlewares:
+        {{- if $authEnabled }}
+        - name: {{ $ingressRoute.auth.middlewareName }}
+          namespace: {{ .Release.Namespace }}
+        {{- end }}
+        {{- if $headersEnabled }}
+        - name: {{ $ingressRoute.headers.middlewareName }}
+          namespace: {{ .Release.Namespace }}
+        {{- end }}
+      {{- end }}
+      services:
+        - name: backrest
+          port: 80
+{{- if $authEnabled }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ $ingressRoute.auth.middlewareName }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  basicAuth:
+    secret: {{ $ingressRoute.auth.secretName }}
+{{- end }}
+{{- if $headersEnabled }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ $ingressRoute.headers.middlewareName }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  headers:
+    customRequestHeaders:
+{{ toYaml $ingressRoute.headers.customRequestHeaders | indent 6 }}
+{{- end }}
+{{- end }}
