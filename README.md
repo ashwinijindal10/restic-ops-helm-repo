@@ -77,13 +77,7 @@ ui:
 EOF
 ```
 
-### 3. Install the chart
 
-```bash
-helm repo add restic-ops https://github.com/yourorg/restic-ops-helm
-helm repo update
-helm install restic-ops restic-ops/restic-ops -f my-values.yaml
-```
 
 ## Configuration
 
