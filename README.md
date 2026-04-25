@@ -281,6 +281,25 @@ helm get values restic-ops
 - Restic version: Latest
 - Backrest version: Latest
 
+## Rebuild and publish chart (after changes)
+
+Run these steps when Chart.yaml, templates/, or chart behavior changes.
+
+Bump version in Chart.yaml for each release.
+Package chart into docs/charts.
+Rebuild chart index with the same repository base URL.
+Commit and push.
+# from repo root
+
+helm lint .
+helm package . --destination docs/charts
+helm repo index docs/charts \
+  --url https://ashwinijindal10.github.io/restic-ops-help-repo/charts
+
+git add .
+git commit -m "chore(release): package chart and update index"
+git push origin main
+
 ## License
 
 MIT
