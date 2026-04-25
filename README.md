@@ -134,6 +134,8 @@ backup:
 | `enableBackrestUI` | bool | `true` | Enable/disable UI |
 | `replicas` | int | `1` | UI deployment replicas |
 | `image` | string | `ghcr.io/garethgeorge/backrest:latest` | UI container image |
+| `ui.storageClass` | string | `standard` | Storage class for Backrest UI data PVC |
+| `ui.storageSize` | string | `1Gi` | Storage size for Backrest UI data PVC |
 | `ui.nodeSelector` | map | `{}` | Node labels for UI pods |
 | `ui.service.type` | string | `ClusterIP` | Service type (ClusterIP/LoadBalancer) |
 | `ui.ingress.enabled` | bool | `false` | Enable Ingress |

@@ -2,10 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Storage configuration for Backrest UI data PVC
-storageClass: standard
-storageSize: 1Gi
-
 # Backrest UI Service and Ingress configuration
 enableBackrestUI: true
 
@@ -15,6 +11,8 @@ createBackupTargetPVCs: false
 ui:
   replicas: 1
   image: ghcr.io/garethgeorge/backrest:latest
+  storageClass: standard
+  storageSize: 1Gi
   nodeSelector: {}
     # Example:
     # capability/ui: "true"
