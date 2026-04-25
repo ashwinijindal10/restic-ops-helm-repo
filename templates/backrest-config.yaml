@@ -1,4 +1,4 @@
-{{- if and .Values.enableBackrestUI .Values.ui.backrestConfig.enabled (not .Values.ui.backrestConfig.existingConfigMap) }}
+{{- if and .Values.ui.enabled .Values.ui.backrestConfig.enabled (not .Values.ui.backrestConfig.existingConfigMap) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

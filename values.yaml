@@ -2,13 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Backrest UI Service and Ingress configuration
-enableBackrestUI: true
-
-# Create PVCs for backup targets (set to false if you manage PVCs separately)
-createBackupTargetPVCs: false
-
 ui:
+  enabled: true
   replicas: 1
   image: ghcr.io/garethgeorge/backrest:latest
   storageClass: standard
@@ -82,6 +77,8 @@ resticPassword: changeme  # Reference only; actual value comes from secret
 
 # Restic CronJob configuration
 backup:
+  createTargetPVCs: false
+
   cronJob:
     enabled: false
 

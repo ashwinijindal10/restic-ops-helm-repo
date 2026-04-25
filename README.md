@@ -72,8 +72,8 @@ backup:
       storageClass: standard
       size: 50Gi
 
-enableBackrestUI: true
 ui:
+  enabled: true
   ingress:
     enabled: true
     host: "backrest.example.com"
@@ -90,8 +90,8 @@ EOF
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `secretName` | string | `restic-secret` | Secret containing cloud credentials and password |
-| `enableBackrestUI` | bool | `true` | Deploy Backrest UI dashboard |
-| `createBackupTargetPVCs` | bool | `false` | Auto-create backup target PVCs |
+| `ui.enabled` | bool | `true` | Deploy Backrest UI dashboard |
+| `backup.createTargetPVCs` | bool | `false` | Auto-create backup target PVCs |
 
 ### Backup Configuration
 
@@ -123,10 +123,11 @@ backup:
 
 ### Backup Targets
 
-Define multiple PVCs to backup:
+Define multiple PVCs to backup. Set `backup.createTargetPVCs: true` if you want Helm to create these PVCs from the target definitions:
 
 ```yaml
 backup:
+  createTargetPVCs: true
   targets:
     - name: app-data
       mountPath: /data
@@ -144,7 +145,7 @@ backup:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `enableBackrestUI` | bool | `true` | Enable/disable UI |
+| `ui.enabled` | bool | `true` | Enable/disable UI |
 | `replicas` | int | `1` | UI deployment replicas |
 | `image` | string | `ghcr.io/garethgeorge/backrest:latest` | UI container image |
 | `ui.storageClass` | string | `standard` | Storage class for Backrest UI data PVC |

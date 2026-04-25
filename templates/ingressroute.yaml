@@ -1,4 +1,4 @@
-{{- if and .Values.enableBackrestUI .Values.ui.traefik.ingressRoute.enabled }}
+{{- if and .Values.ui.enabled .Values.ui.traefik.ingressRoute.enabled }}
 {{- $ingressRoute := .Values.ui.traefik.ingressRoute }}
 {{- $authEnabled := $ingressRoute.auth.enabled }}
 {{- $headersEnabled := $ingressRoute.headers.enabled }}

@@ -1,4 +1,4 @@
-{{- if .Values.createBackupTargetPVCs }}
+{{- if .Values.backup.createTargetPVCs }}
 {{- range .Values.backup.targets }}
 ---
 apiVersion: v1
