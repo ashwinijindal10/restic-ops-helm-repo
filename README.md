@@ -46,7 +46,7 @@ kubectl create namespace backup
 kubectl create secret generic restic-secret \
   --from-literal=AWS_ACCESS_KEY_ID=your-access-key \
   --from-literal=AWS_SECRET_ACCESS_KEY=your-secret-key \
-  --from-literal=OCI_ENDPOINT=s3:https://s3.example.com/backups \
+  --from-literal=BUCKET_ENDPOINT=s3:https://s3.example.com/backups \
   --from-literal=RESTIC_PASSWORD=your-secure-password \
   -n backup
 ```
@@ -151,7 +151,7 @@ The Kubernetes secret (referenced by `secretName`) must contain:
 **For All Backends:**
 ```yaml
 RESTIC_PASSWORD: <strong-encryption-password>  # Restic repository encryption password
-OCI_ENDPOINT: <restic-repository-base-url>      # Example: s3:https://s3.example.com/backups
+BUCKET_ENDPOINT: <restic-repository-base-url>   # Example: s3:https://s3.example.com/backups
 ```
 
 **For S3/AWS:**
@@ -163,7 +163,7 @@ AWS_SECRET_ACCESS_KEY: <your-secret>
 
 **For OCI:**
 ```yaml
-OCI_ENDPOINT: s3:https://objectstorage.us-phoenix-1.oraclecloud.com/<namespace>/<bucket>
+BUCKET_ENDPOINT: s3:https://objectstorage.us-phoenix-1.oraclecloud.com/<namespace>/<bucket>
 AWS_ACCESS_KEY_ID: <your-customer-key>
 AWS_SECRET_ACCESS_KEY: <your-customer-secret>
 # AWS_DEFAULT_REGION is optional; set backup.region only if your provider requires it
@@ -180,7 +180,7 @@ AZURE_ACCOUNT_KEY: <account-key>
 kubectl create secret generic restic-secret \
   --from-literal=AWS_ACCESS_KEY_ID=your-key \
   --from-literal=AWS_SECRET_ACCESS_KEY=your-secret \
-  --from-literal=OCI_ENDPOINT=s3:https://s3.example.com/backups \
+  --from-literal=BUCKET_ENDPOINT=s3:https://s3.example.com/backups \
   --from-literal=RESTIC_PASSWORD=your-strong-password \
   -n backup  # Use your namespace
 ```
@@ -257,7 +257,7 @@ kubectl exec -it -n backup <pod-name> -- \
 
 ### UI cannot connect to backups
 - Ensure AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY are in secret
-- Verify OCI_ENDPOINT repository base URL is correct and accessible
+- Verify BUCKET_ENDPOINT repository base URL is correct and accessible
 - Check network policies allow outbound connections
 
 ### Out of memory/CPU errors

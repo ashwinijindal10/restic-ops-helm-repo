@@ -40,7 +40,7 @@ ui:
 # ⚠️ IMPORTANT: Secret must already exist with these keys:
 #   - AWS_ACCESS_KEY_ID
 #   - AWS_SECRET_ACCESS_KEY
-#   - OCI_ENDPOINT (for OCI/S3-compatible storage)
+#   - BUCKET_ENDPOINT (restic repository base URL)
 secretName: restic-secret
 
 # Restic encryption password

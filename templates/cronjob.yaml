@@ -42,11 +42,11 @@ spec:
                   value: {{ .Values.backup.region | quote }}
                 {{- end }}
 
-                - name: OCI_ENDPOINT
+                - name: BUCKET_ENDPOINT
                   valueFrom:
                     secretKeyRef:
                       name: {{ .Values.secretName }}
-                      key: OCI_ENDPOINT
+                      key: BUCKET_ENDPOINT
 
                 - name: RESTIC_PASSWORD
                   valueFrom:
@@ -66,7 +66,7 @@ spec:
                   backup_volume() {
                     NAME=$1
                     MOUNT_PATH=$2
-                    REPO="${OCI_ENDPOINT}/${NAME}"
+                    REPO="${BUCKET_ENDPOINT}/${NAME}"
 
                     echo "=============================="
                     echo "Starting backup: ${NAME}"
