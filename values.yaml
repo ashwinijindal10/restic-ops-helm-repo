@@ -65,6 +65,9 @@ resticPassword: changeme  # Reference only; actual value comes from secret
 
 # Restic CronJob configuration
 backup:
+  cronJob:
+    enabled: false
+
   # Restic container image
   image: restic/restic:latest
 

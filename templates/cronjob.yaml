@@ -1,3 +1,4 @@
+{{- if .Values.backup.cronJob.enabled }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -102,4 +103,4 @@ spec:
               persistentVolumeClaim:
                 claimName: {{ .pvc }}
             {{- end }}
-                
+{{- end }}

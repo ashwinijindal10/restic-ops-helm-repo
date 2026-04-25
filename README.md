@@ -58,6 +58,8 @@ cat > my-values.yaml << EOF
 secretName: restic-secret
 
 backup:
+  cronJob:
+    enabled: false
   schedule: "0 2 * * *"  # Daily at 2 AM UTC
   retention:
     daily: 7
@@ -95,6 +97,7 @@ EOF
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
+| `backup.cronJob.enabled` | bool | `false` | Enable scheduled Kubernetes CronJob backups |
 | `backup.schedule` | string | `"0 2 * * *"` | Cron schedule (UTC) |
 | `backup.region` | string | unset | Optional cloud region for backup storage; restic defaults to `us-east-1` when omitted |
 | `backup.retention.daily` | int | `7` | Keep daily snapshots |
@@ -107,6 +110,16 @@ EOF
 | `backup.ttlSecondsAfterFinished` | int | `36000` | Delete finished jobs after (seconds) |
 | `backup.nodeSelector` | map | `{}` | Node labels for job pods |
 | `backup.resources` | map | See defaults | CPU/memory requests and limits |
+
+### CronJob Mode
+
+By default, Backrest manages schedules, retention, repositories, and restores. If you want Kubernetes CronJob-based backups instead, enable the CronJob:
+
+```yaml
+backup:
+  cronJob:
+    enabled: true
+```
 
 ### Backup Targets
 
