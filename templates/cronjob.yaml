@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: nfs-backup-all
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   schedule: {{ .Values.backup.schedule | quote }}
   concurrencyPolicy: {{ .Values.backup.concurrencyPolicy }}

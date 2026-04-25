@@ -8,7 +8,9 @@
   ```bash
   helm repo add restic-ops https://ashwinijindal10.github.io/restic-ops-help-repo/charts
   helm repo update
-  helm install restic-ops restic-ops/restic-ops -f my-values.yaml
+  helm upgrade --install restic-ops restic-ops/restic-ops \
+    -f my-values.yaml \
+    -n backup --create-namespace
   ```
 
 For detailed configuration and troubleshooting, see the sections below in the README.
@@ -39,19 +41,20 @@ A production-ready Helm chart for scheduled Kubernetes volume backups using rest
 ### 1. Create the backup secret
 
 ```bash
+kubectl create namespace backup
+
 kubectl create secret generic restic-secret \
   --from-literal=AWS_ACCESS_KEY_ID=your-access-key \
   --from-literal=AWS_SECRET_ACCESS_KEY=your-secret-key \
   --from-literal=OCI_ENDPOINT=s3:https://s3.example.com/backups \
   --from-literal=RESTIC_PASSWORD=your-secure-password \
-  -n default
+  -n backup
 ```
 
 ### 2. Create your custom values
 
 ```bash
 cat > my-values.yaml << EOF
-namespace: backup
 secretName: restic-secret
 
 backup:
@@ -84,7 +87,6 @@ EOF
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `namespace` | string | `default` | Kubernetes namespace |
 | `secretName` | string | `restic-secret` | Secret containing cloud credentials and password |
 | `enableBackrestUI` | bool | `true` | Deploy Backrest UI dashboard |
 | `createBackupTargetPVCs` | bool | `false` | Auto-create backup target PVCs |
@@ -264,22 +266,26 @@ kubectl exec -it -n backup <pod-name> -- \
 
 ```bash
 # Lint the chart
-helm lint k3s/helm/restic-ops
+helm lint .
 
 # Template (dry run)
-helm template restic-ops k3s/helm/restic-ops -f my-values.yaml
+helm template restic-ops . -f my-values.yaml -n backup
 
 # Install
-helm install restic-ops k3s/helm/restic-ops -f my-values.yaml
+helm upgrade --install restic-ops restic-ops/restic-ops \
+  -f my-values.yaml \
+  -n backup --create-namespace
 
 # Upgrade
-helm upgrade restic-ops k3s/helm/restic-ops -f my-values.yaml
+helm upgrade restic-ops restic-ops/restic-ops \
+  -f my-values.yaml \
+  -n backup
 
 # Uninstall
-helm uninstall restic-ops
+helm uninstall restic-ops -n backup
 
 # Get values
-helm get values restic-ops
+helm get values restic-ops -n backup
 ```
 
 ## Development & Contributing
