@@ -3,10 +3,10 @@ entries:
   restic-ops:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-04-25T15:27:01.674847+05:30"
+    created: "2026-04-25T16:07:25.198494+05:30"
     description: Production-ready Helm chart for restic-based Kubernetes backups with
       Backrest UI
-    digest: 1c27158aecd9287a59c5dc1086f37bdc54854bdd299eed2308ba8b731d8c6086
+    digest: 417c476fd0c4533f91a750bdc0e1da5ae46a7becd987f220029d7df9e6caa7e8
     keywords:
     - backup
     - restic
@@ -20,4 +20,4 @@ entries:
     urls:
     - https://ashwinijindal10.github.io/restic-ops-help-repo/charts/restic-ops-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-25T15:27:01.674051+05:30"
+generated: "2026-04-25T16:07:25.19641+05:30"

@@ -45,8 +45,10 @@ spec:
                   name: {{ .Values.secretName }}
                   key: RESTIC_PASSWORD
 
+            {{- if .Values.backup.region }}
             - name: AWS_DEFAULT_REGION
               value: {{ .Values.backup.region | quote }}
+            {{- end }}
 
             - name: RESTIC_REPOSITORY
               value: "dummy"

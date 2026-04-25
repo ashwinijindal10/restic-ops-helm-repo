@@ -42,7 +42,8 @@ A production-ready Helm chart for scheduled Kubernetes volume backups using rest
 kubectl create secret generic restic-secret \
   --from-literal=AWS_ACCESS_KEY_ID=your-access-key \
   --from-literal=AWS_SECRET_ACCESS_KEY=your-secret-key \
-  --from-literal=OCI_ENDPOINT=https://your-oci-endpoint.com \
+  --from-literal=OCI_ENDPOINT=s3:https://s3.example.com/backups \
+  --from-literal=RESTIC_PASSWORD=your-secure-password \
   -n default
 ```
 
@@ -52,11 +53,9 @@ kubectl create secret generic restic-secret \
 cat > my-values.yaml << EOF
 namespace: backup
 secretName: restic-secret
-resticPassword: your-secure-password
 
 backup:
   schedule: "0 2 * * *"  # Daily at 2 AM UTC
-  repoBase: "s3:https://s3.example.com/backups"
   retention:
     daily: 7
     weekly: 4
@@ -95,8 +94,7 @@ EOF
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `backup.schedule` | string | `"0 2 * * *"` | Cron schedule (UTC) |
-| `backup.region` | string | `us-east-1` | Cloud region for backup storage |
-| `backup.repoBase` | string | `s3://...` | Backend repository URL |
+| `backup.region` | string | unset | Optional cloud region for backup storage; restic defaults to `us-east-1` when omitted |
 | `backup.retention.daily` | int | `7` | Keep daily snapshots |
 | `backup.retention.weekly` | int | `4` | Keep weekly snapshots |
 | `backup.retention.monthly` | int | `3` | Keep monthly snapshots |
@@ -149,21 +147,22 @@ The Kubernetes secret (referenced by `secretName`) must contain:
 **For All Backends:**
 ```yaml
 RESTIC_PASSWORD: <strong-encryption-password>  # Restic repository encryption password
+OCI_ENDPOINT: <restic-repository-base-url>      # Example: s3:https://s3.example.com/backups
 ```
 
 **For S3/AWS:**
 ```yaml
 AWS_ACCESS_KEY_ID: <your-key>
 AWS_SECRET_ACCESS_KEY: <your-secret>
-# AWS_DEFAULT_REGION is set from backup.region in values
+# AWS_DEFAULT_REGION is optional; set backup.region only if your provider requires it
 ```
 
 **For OCI:**
 ```yaml
-OCI_ENDPOINT: https://objectstorage.us-phoenix-1.oraclecloud.com
+OCI_ENDPOINT: s3:https://objectstorage.us-phoenix-1.oraclecloud.com/<namespace>/<bucket>
 AWS_ACCESS_KEY_ID: <your-customer-key>
 AWS_SECRET_ACCESS_KEY: <your-customer-secret>
-# AWS_DEFAULT_REGION is set from backup.region in values
+# AWS_DEFAULT_REGION is optional; set backup.region only if your provider requires it
 ```
 
 **For Azure:**
@@ -177,6 +176,7 @@ AZURE_ACCOUNT_KEY: <account-key>
 kubectl create secret generic restic-secret \
   --from-literal=AWS_ACCESS_KEY_ID=your-key \
   --from-literal=AWS_SECRET_ACCESS_KEY=your-secret \
+  --from-literal=OCI_ENDPOINT=s3:https://s3.example.com/backups \
   --from-literal=RESTIC_PASSWORD=your-strong-password \
   -n backup  # Use your namespace
 ```
@@ -253,7 +253,7 @@ kubectl exec -it -n backup <pod-name> -- \
 
 ### UI cannot connect to backups
 - Ensure AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY are in secret
-- Verify repoBase URL is correct and accessible
+- Verify OCI_ENDPOINT repository base URL is correct and accessible
 - Check network policies allow outbound connections
 
 ### Out of memory/CPU errors
